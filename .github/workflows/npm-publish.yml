@@ -6,9 +6,12 @@ name: Node.js Package
 on:
   release:
     types: [created]
+  workflow_dispatch: {}
 
 jobs:
   build:
+    # Only run automatically for the `main` branch or when a release is created.
+    if: github.ref == 'refs/heads/main' || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,6 +23,8 @@ jobs:
 
   publish-npm:
     needs: build
+    # Only publish when the run is for `main` or a release (keeps publishes scoped to main).
+    if: github.ref == 'refs/heads/main' || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
