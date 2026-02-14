@@ -9,6 +9,10 @@ on:
       - main
   workflow_dispatch: {}
 
+permissions:
+  contents: write        # Required to push commits and tags
+  issues: write          # Required to create failure issues
+  pull-requests: write   # Optional: required if managing PRs
 
 jobs:
   release:
