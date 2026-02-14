@@ -218,6 +218,7 @@ Please run the tests (if added) and ensure linting/type-checks pass before submi
 
 This project uses [semantic-release](https://semantic-release.gitbook.io/) to automate versioning and publishing based on commit messages. Please follow the [Conventional Commits](https://www.conventionalcommits.org/) format:
 
+
 ```
 type(scope): subject
 
