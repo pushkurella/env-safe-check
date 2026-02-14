@@ -10,15 +10,36 @@
   "scripts": {
     "test": "echo \"hello world\"",
     "build": "tsup src/index.ts --format esm --dts --out-dir dist",
-    "prepare": "npm run build"
+    "prepare": "npm run build && husky install",
+    "cz": "cz"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "env",
+    "environment",
+    "validation",
+    "safe",
+    "check",
+    "typescript"
+  ],
+  "author": "Pushpak Kurella",
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "typescript": "^5.9.3",
+    "@commitlint/config-conventional": "^20.4.1",
+    "@semantic-release/github": "^12.0.6",
+    "@semantic-release/npm": "^13.1.4",
     "@types/node": "^20.6.5",
-    "tsup": "^6.6.0"
+    "commitizen": "^4.3.1",
+    "commitlint": "^20.4.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^9.1.7",
+    "semantic-release": "^25.0.3",
+    "tsup": "^6.6.0",
+    "typescript": "^5.9.3"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }

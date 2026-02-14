@@ -1,38 +1,37 @@
-# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
-# For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
+# This workflow automatically publishes a new version to npm based on conventional commits.
+# It analyzes commits, bumps the version, and publishes to npm using semantic-release.
 
-name: Node.js Package
+name: Semantic Release
 
 on:
-  release:
-    types: [created]
+  push:
+    branches:
+      - main
   workflow_dispatch: {}
 
-jobs:
-  build:
-    # Only run automatically for the `main` branch or when a release is created.
-    if: github.ref == 'refs/heads/main' || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm ci
-      - run: npm test
 
-  publish-npm:
-    needs: build
-    # Only publish when the run is for `main` or a release (keeps publishes scoped to main).
-    if: github.ref == 'refs/heads/main' || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+jobs:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required by semantic-release to analyze full git history
+          
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
+
       - run: npm ci
-      - run: npm publish
+      
+      - run: npm run build
+      
+      - run: npm test
+      
+      - name: Release
+        run: npx semantic-release
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
