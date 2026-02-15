@@ -1,6 +1,6 @@
 {
   "name": "env-safe-check",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,6 +11,9 @@
     "test": "jest",
     "test:types": "npm run typecheck",
     "build": "tsup src/index.ts --format esm --dts --out-dir dist",
+    "snapshot:version": "npm version prerelease --preid snapshot --no-git-tag-version",
+    "snapshot:publish": "npm run build && npm publish --tag snapshot",
+    "snapshot": "npm run snapshot:version && npm run snapshot:publish",
     "prepare": "npm run build && husky install",
     "cz": "cz",
     "typecheck": "tsc --noEmit"

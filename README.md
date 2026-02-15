@@ -66,8 +66,7 @@ const env = validateEnv({
     },
     FEATURE_CONFIG: { type: 'json', required: false },
   },
-  throwError: false, // default: exits process on error
-  silent: false, // default: prints colorful output
+  silent: false, // default: prints colorful output and exits on error
 });
 
 console.log(env.PORT); // 3000 (or parsed value from process.env.PORT)
@@ -87,10 +86,9 @@ console.log(env.PORT); // 3000 (or parsed value from process.env.PORT)
   - Each value can be:
     - Type shorthand: `'string' | 'number' | 'boolean' | 'json'`
     - Full `VariableSchema` object
-- **config.throwError** (default: `false`) — throw `EnvValidationError` instead of exiting
-- **config.silent** (default: `false`) — suppress console output
+- **config.silent** (default: `false`) — if `true`, suppress output and throw `EnvValidationError`; if `false`, print output and exit with code `1` on validation failure
 - **Returns** — object with parsed env values
-- **Throws** — `EnvValidationError` if `throwError: true` and validation fails
+- **Throws** — `EnvValidationError` if `silent: true` and validation fails
 
 ### `VariableSchema`
 
@@ -122,7 +120,7 @@ interface VariableSchema {
 import { EnvValidationError, validateEnv } from 'env-safe-check';
 
 try {
-  validateEnv({ schema: { DB_URL: 'string' }, throwError: true });
+  validateEnv({ schema: { DB_URL: 'string' }, silent: true });
 } catch (err) {
   if (err instanceof EnvValidationError) {
     console.error('Missing:', err.missing);
@@ -136,7 +134,7 @@ try {
 - Validate **once at startup** and fail fast.
 - Add a `description` for each variable so error output helps teammates quickly.
 - Use `validatorHint` whenever you use a custom `validator`.
-- Prefer `throwError: true` in tests and scripts where you need custom handling.
+- Use `silent: true` in tests and scripts where you need custom handling.
 - Keep optional variables explicit (`required: false`) and document defaults.
 
 ## Examples
@@ -167,7 +165,7 @@ import { EnvValidationError, validateEnv } from 'env-safe-check';
 try {
   validateEnv({
     schema: { DB_URL: 'string' },
-    throwError: true,
+    silent: true,
   });
 } catch (err) {
   if (err instanceof EnvValidationError) {

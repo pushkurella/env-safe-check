@@ -30,7 +30,6 @@ describe("validateEnv", () => {
         APP_CONFIG: "json",
         NODE_ENV: { type: "string", required: false, default: "development" },
       },
-      throwError: true,
       silent: true,
     });
 
@@ -48,7 +47,6 @@ describe("validateEnv", () => {
         schema: {
           DATABASE_URL: { type: "string", description: "Database connection string" },
         },
-        throwError: true,
         silent: true,
       })
     ).toThrow(EnvValidationError);
@@ -56,7 +54,6 @@ describe("validateEnv", () => {
     try {
       validateEnv({
         schema: { DATABASE_URL: "string" },
-        throwError: true,
         silent: true,
       });
     } catch (error) {
@@ -87,7 +84,6 @@ describe("validateEnv", () => {
     try {
       validateEnv({
         schema: { PORT: "number" },
-        throwError: true,
         silent: true,
       });
       throw new Error("Expected validateEnv to throw");
@@ -114,7 +110,6 @@ describe("validateEnv", () => {
                 : "Must be one of: development, production, test",
           },
         },
-        throwError: true,
         silent: true,
       });
       throw new Error("Expected validateEnv to throw");

@@ -51,20 +51,15 @@ export interface ValidateEnvOptions {
   schema: Record<string, VariableSchema | VariableType>;
 
   /**
-   * If true, throw a custom error instead of calling process.exit(1).
-   * @default false
-   */
-  throwError?: boolean;
-
-  /**
-   * If true, don't print console messages.
+   * If true, don't print console messages and throw EnvValidationError on failure.
+   * If false, prints messages and exits process with code 1 on failure.
    * @default false
    */
   silent?: boolean;
 }
 
 /**
- * Custom error thrown when validation fails (if throwError option is true).
+ * Custom error thrown when schema validation fails in silent mode.
  */
 export interface EnvValidationDetails {
   missing: string[];

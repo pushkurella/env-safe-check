@@ -56,7 +56,7 @@ export function validateEnv(
 
   // New API with schema validation
   const config = configOrRequired as ValidateEnvOptions;
-  const { schema, throwError = false, silent = false } = config;
+  const { schema, silent = false } = config;
 
   const missing: string[] = [];
   const invalid: Record<string, string> = {};
@@ -118,7 +118,7 @@ export function validateEnv(
       console.error(errorMsg);
     }
 
-    if (throwError) {
+    if (silent) {
       throw new EnvValidationError(
         stripAnsi(errorMsg),
         { missing, invalid }
