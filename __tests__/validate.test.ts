@@ -41,81 +41,71 @@ describe("validateEnv", () => {
     });
   });
 
-  it("throws EnvValidationError when required variables are missing", () => {
+  it("suppresses missing variable errors when silent is true", () => {
+    const env = validateEnv({
+      schema: {
+        DATABASE_URL: { type: "string", description: "Database connection string" },
+      },
+      silent: true,
+    });
+
+    expect(env).toEqual({});
+    expect(console.error).not.toHaveBeenCalled();
+    expect(process.exit).not.toHaveBeenCalled();
+  });
+
+  it("suppresses invalid typed value errors when silent is true", () => {
+    process.env.PORT = "not-a-number";
+
+    const env = validateEnv({
+      schema: { PORT: "number" },
+      silent: true,
+    });
+
+    expect(env).toEqual({});
+    expect(console.error).not.toHaveBeenCalled();
+    expect(process.exit).not.toHaveBeenCalled();
+  });
+
+  it("suppresses custom validator errors when silent is true", () => {
+    process.env.NODE_ENV = "qa";
+
+    const env = validateEnv({
+      schema: {
+        NODE_ENV: {
+          type: "string",
+          validator: (value) =>
+            ["development", "production", "test"].includes(value)
+              ? true
+              : "Must be one of: development, production, test",
+        },
+      },
+      silent: true,
+    });
+
+    expect(env).toEqual({ NODE_ENV: "qa" });
+    expect(console.error).not.toHaveBeenCalled();
+    expect(process.exit).not.toHaveBeenCalled();
+  });
+
+  it("logs color output and throws generic EnvValidationError when silent is false", () => {
     expect(() =>
       validateEnv({
-        schema: {
-          DATABASE_URL: { type: "string", description: "Database connection string" },
-        },
-        silent: true,
+        schema: { DATABASE_URL: "string" },
       })
     ).toThrow(EnvValidationError);
 
     try {
       validateEnv({
         schema: { DATABASE_URL: "string" },
-        silent: true,
       });
     } catch (error) {
       const err = error as EnvValidationError;
-      expect(err.code).toBe("ENV_VALIDATION_ERROR");
+      expect(err.message).toBe("Environment validation failed");
       expect(err.missing).toEqual(["DATABASE_URL"]);
       expect(err.invalid).toEqual({});
-      expect(err.details).toEqual({
-        missing: ["DATABASE_URL"],
-        invalid: {},
-      });
-      expect(err.message).toContain("Environment validation failed");
-      expect(err.message).toContain("Missing required variables:");
-      expect(err.message).toContain("DATABASE_URL");
-      expect(err.toJSON()).toEqual({
-        name: "EnvValidationError",
-        code: "ENV_VALIDATION_ERROR",
-        message: err.message,
-        missing: ["DATABASE_URL"],
-        invalid: {},
-      });
-    }
-  });
-
-  it("throws EnvValidationError for invalid typed values", () => {
-    process.env.PORT = "not-a-number";
-
-    try {
-      validateEnv({
-        schema: { PORT: "number" },
-        silent: true,
-      });
-      throw new Error("Expected validateEnv to throw");
-    } catch (error) {
-      const err = error as EnvValidationError;
-      expect(err.missing).toEqual([]);
-      expect(err.invalid.PORT).toContain("Invalid number");
-      expect(err.message).toContain("Invalid variables:");
-      expect(err.message).toContain("PORT: Invalid number");
-    }
-  });
-
-  it("uses custom validator messages for invalid values", () => {
-    process.env.NODE_ENV = "qa";
-
-    try {
-      validateEnv({
-        schema: {
-          NODE_ENV: {
-            type: "string",
-            validator: (value) =>
-              ["development", "production", "test"].includes(value)
-                ? true
-                : "Must be one of: development, production, test",
-          },
-        },
-        silent: true,
-      });
-      throw new Error("Expected validateEnv to throw");
-    } catch (error) {
-      const err = error as EnvValidationError;
-      expect(err.invalid.NODE_ENV).toBe("Must be one of: development, production, test");
+      expect(console.error).toHaveBeenCalledTimes(2);
+      expect(process.exit).not.toHaveBeenCalled();
     }
   });
 

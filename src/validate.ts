@@ -114,18 +114,15 @@ export function validateEnv(
   const hasErrors = missing.length > 0 || Object.keys(invalid).length > 0;
   if (hasErrors) {
     const errorMsg = buildErrorMessage(missing, invalid, schema);
-    if (!silent) {
-      console.error(errorMsg);
+    if (silent) {
+      return parsed;
     }
 
-    if (silent) {
-      throw new EnvValidationError(
-        stripAnsi(errorMsg),
-        { missing, invalid }
-      );
-    } else {
-      process.exit(1);
-    }
+    console.error(errorMsg);
+    throw new EnvValidationError("Environment validation failed", {
+      missing,
+      invalid,
+    });
   }
 
   if (!silent) {
@@ -209,13 +206,6 @@ function buildErrorMessage(
 
   msg += `\n${colors.cyan}Tip:${colors.reset} define/fix them in your .env file or environment config.`;
   return msg;
-}
-
-/**
- * Convert ANSI-colored output to plain text for thrown error messages.
- */
-function stripAnsi(value: string): string {
-  return value.replace(/\x1B\[[0-9;]*m/g, "");
 }
 
 /**

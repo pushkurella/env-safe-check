@@ -51,15 +51,15 @@ export interface ValidateEnvOptions {
   schema: Record<string, VariableSchema | VariableType>;
 
   /**
-   * If true, don't print console messages and throw EnvValidationError on failure.
-   * If false, prints messages and exits process with code 1 on failure.
+   * If true, suppress console output and skip schema validation failures.
+   * If false, print colorful output and throw EnvValidationError on failure.
    * @default false
    */
   silent?: boolean;
 }
 
 /**
- * Custom error thrown when schema validation fails in silent mode.
+ * Custom error thrown when schema validation fails in non-silent mode.
  */
 export interface EnvValidationDetails {
   missing: string[];
