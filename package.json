@@ -8,10 +8,11 @@
     "dist"
   ],
   "scripts": {
-    "test": "echo \"hello world\"",
+    "test": "npm run typecheck",
     "build": "tsup src/index.ts --format esm --dts --out-dir dist",
     "prepare": "npm run build && husky install",
-    "cz": "cz"
+    "cz": "cz",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "env",
@@ -23,7 +24,7 @@
   ],
   "author": "Pushpak Kurella",
   "license": "ISC",
-  "description": "",
+  "description": "Validate environment variables with schema-based parsing, defaults, and clear runtime errors.",
   "devDependencies": {
     "@commitlint/config-conventional": "^20.4.1",
     "@semantic-release/github": "^12.0.6",
