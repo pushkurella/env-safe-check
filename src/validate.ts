@@ -180,14 +180,31 @@ function buildErrorMessage(
     msg += `\n${colors.bold}Missing required variables:${colors.reset}\n`;
     missing.forEach((key) => {
       const desc = getSchemaDescription(key, schema);
-      msg += `  ${colors.yellow}${key}${colors.reset}${desc ? ` - ${colors.gray}${desc}${colors.reset}` : ""}\n`;
+      const expected = getExpectedInputHint(key, schema);
+      msg += `  ${colors.yellow}${key}${colors.reset}`;
+      if (desc) {
+        msg += ` - ${colors.gray}${desc}${colors.reset}`;
+      }
+      if (expected) {
+        msg += `\n    ${colors.gray}Expected:${colors.reset} ${expected}`;
+      }
+      msg += "\n";
     });
   }
 
   if (Object.keys(invalid).length > 0) {
     msg += `\n${colors.bold}Invalid variables:${colors.reset}\n`;
     for (const [key, error] of Object.entries(invalid)) {
-      msg += `  ${colors.yellow}${key}${colors.reset}: ${error}\n`;
+      const desc = getSchemaDescription(key, schema);
+      const expected = getExpectedInputHint(key, schema);
+      msg += `  ${colors.yellow}${key}${colors.reset}: ${error}`;
+      if (desc) {
+        msg += `\n    ${colors.gray}${desc}${colors.reset}`;
+      }
+      if (expected) {
+        msg += `\n    ${colors.gray}Expected:${colors.reset} ${expected}`;
+      }
+      msg += "\n";
     }
   }
 
@@ -206,4 +223,53 @@ function getSchemaDescription(
   if (!def) return "";
   if (typeof def === "string") return "";
   return def.description || "";
+}
+
+/**
+ * Build a concise expected input hint from schema configuration.
+ */
+function getExpectedInputHint(
+  key: string,
+  schema: Record<string, VariableSchema | VariableType>
+): string {
+  const def = schema[key];
+  if (!def) return "";
+
+  const normalized: VariableSchema =
+    typeof def === "string" ? { type: def as VariableType } : def;
+
+  const type = normalized.type || "string";
+  const required = normalized.required !== false ? "required" : "optional";
+  const typeHint = getTypeHint(type);
+
+  let hint = `${required} ${type} (${typeHint})`;
+
+  if (normalized.default !== undefined) {
+    hint += `, default='${normalized.default}'`;
+  }
+
+  if (normalized.validatorHint && normalized.validatorHint.trim() !== "") {
+    hint += `, ${normalized.validatorHint.trim()}`;
+  } else if (normalized.validator) {
+    hint += ", must satisfy custom validator";
+  }
+
+  return hint;
+}
+
+/**
+ * Human-friendly guidance for each supported type.
+ */
+function getTypeHint(type: VariableType): string {
+  switch (type) {
+    case "number":
+      return "numeric value (e.g. 3000)";
+    case "boolean":
+      return "true/false or 1/0";
+    case "json":
+      return "valid JSON string";
+    case "string":
+    default:
+      return "plain text";
+  }
 }
