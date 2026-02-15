@@ -30,6 +30,12 @@ export interface VariableSchema {
   validator?: (value: string) => boolean | string;
 
   /**
+   * Human-readable hint for validator constraints (e.g. "one of: development, staging, production").
+   * Shown in error output to help users provide valid values.
+   */
+  validatorHint?: string;
+
+  /**
    * Description of the variable (for error messages).
    */
   description?: string;
