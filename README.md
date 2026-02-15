@@ -258,14 +258,3 @@ Before submitting:
 - Keep changes focused and minimal
 
 ---
-
-## 📄 License
-
-MIT
-
----
-
-## 🔍 Keywords
-
-environment validation, env validator, node config validation, typescript env validation, runtime configuration safety, dotenv alternative
-
