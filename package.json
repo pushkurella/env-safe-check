@@ -1,6 +1,6 @@
 {
   "name": "env-safe-check",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,8 +8,12 @@
     "dist"
   ],
   "scripts": {
-    "test": "npm run typecheck",
+    "test": "jest",
+    "test:types": "npm run typecheck",
     "build": "tsup src/index.ts --format esm --dts --out-dir dist",
+    "snapshot:version": "npm version prerelease --preid snapshot --no-git-tag-version",
+    "snapshot:publish": "npm run build && npm publish --tag snapshot",
+    "snapshot": "npm run snapshot:version && npm run snapshot:publish",
     "prepare": "npm run build && husky install",
     "cz": "cz",
     "typecheck": "tsc --noEmit"
@@ -29,12 +33,15 @@
     "@commitlint/config-conventional": "^20.4.1",
     "@semantic-release/github": "^12.0.6",
     "@semantic-release/npm": "^13.1.4",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.6.5",
     "commitizen": "^4.3.1",
     "commitlint": "^20.4.1",
     "cz-conventional-changelog": "^3.3.0",
     "husky": "^9.1.7",
+    "jest": "^30.2.0",
     "semantic-release": "^25.0.3",
+    "ts-jest": "^29.4.6",
     "tsup": "^6.6.0",
     "typescript": "^5.9.3"
   },

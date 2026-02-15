@@ -56,7 +56,7 @@ export function validateEnv(
 
   // New API with schema validation
   const config = configOrRequired as ValidateEnvOptions;
-  const { schema, throwError = false, silent = false } = config;
+  const { schema, silent = false } = config;
 
   const missing: string[] = [];
   const invalid: Record<string, string> = {};
@@ -118,11 +118,10 @@ export function validateEnv(
       console.error(errorMsg);
     }
 
-    if (throwError) {
+    if (silent) {
       throw new EnvValidationError(
-        "Environment variable validation failed",
-        missing,
-        invalid
+        stripAnsi(errorMsg),
+        { missing, invalid }
       );
     } else {
       process.exit(1);
@@ -210,6 +209,13 @@ function buildErrorMessage(
 
   msg += `\n${colors.cyan}Tip:${colors.reset} define/fix them in your .env file or environment config.`;
   return msg;
+}
+
+/**
+ * Convert ANSI-colored output to plain text for thrown error messages.
+ */
+function stripAnsi(value: string): string {
+  return value.replace(/\x1B\[[0-9;]*m/g, "");
 }
 
 /**

@@ -51,28 +51,57 @@ export interface ValidateEnvOptions {
   schema: Record<string, VariableSchema | VariableType>;
 
   /**
-   * If true, throw a custom error instead of calling process.exit(1).
-   * @default false
-   */
-  throwError?: boolean;
-
-  /**
-   * If true, don't print console messages.
+   * If true, don't print console messages and throw EnvValidationError on failure.
+   * If false, prints messages and exits process with code 1 on failure.
    * @default false
    */
   silent?: boolean;
 }
 
 /**
- * Custom error thrown when validation fails (if throwError option is true).
+ * Custom error thrown when schema validation fails in silent mode.
  */
+export interface EnvValidationDetails {
+  missing: string[];
+  invalid: Record<string, string>;
+}
+
 export class EnvValidationError extends Error {
+  public readonly code = "ENV_VALIDATION_ERROR";
+  public readonly details: EnvValidationDetails;
+
   constructor(
     message: string,
-    public readonly missing: string[] = [],
-    public readonly invalid: Record<string, string> = {}
+    details: EnvValidationDetails = { missing: [], invalid: {} },
+    options?: { cause?: unknown }
   ) {
-    super(message);
+    super(message, options);
     this.name = 'EnvValidationError';
+    this.details = details;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+
+  get missing(): string[] {
+    return this.details.missing;
+  }
+
+  get invalid(): Record<string, string> {
+    return this.details.invalid;
+  }
+
+  toJSON(): {
+    name: string;
+    code: string;
+    message: string;
+    missing: string[];
+    invalid: Record<string, string>;
+  } {
+    return {
+      name: this.name,
+      code: this.code,
+      message: this.message,
+      missing: this.missing,
+      invalid: this.invalid,
+    };
   }
 }
