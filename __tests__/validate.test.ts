@@ -61,8 +61,23 @@ describe("validateEnv", () => {
       });
     } catch (error) {
       const err = error as EnvValidationError;
+      expect(err.code).toBe("ENV_VALIDATION_ERROR");
       expect(err.missing).toEqual(["DATABASE_URL"]);
       expect(err.invalid).toEqual({});
+      expect(err.details).toEqual({
+        missing: ["DATABASE_URL"],
+        invalid: {},
+      });
+      expect(err.message).toContain("Environment validation failed");
+      expect(err.message).toContain("Missing required variables:");
+      expect(err.message).toContain("DATABASE_URL");
+      expect(err.toJSON()).toEqual({
+        name: "EnvValidationError",
+        code: "ENV_VALIDATION_ERROR",
+        message: err.message,
+        missing: ["DATABASE_URL"],
+        invalid: {},
+      });
     }
   });
 
@@ -80,6 +95,8 @@ describe("validateEnv", () => {
       const err = error as EnvValidationError;
       expect(err.missing).toEqual([]);
       expect(err.invalid.PORT).toContain("Invalid number");
+      expect(err.message).toContain("Invalid variables:");
+      expect(err.message).toContain("PORT: Invalid number");
     }
   });
 
@@ -122,5 +139,20 @@ describe("validateEnv", () => {
     validateEnv(["API_KEY"]);
 
     expect(process.exit).not.toHaveBeenCalled();
+  });
+
+  it("EnvValidationError supports cause and details metadata", () => {
+    const cause = new Error("root cause");
+    const err = new EnvValidationError(
+      "Validation failed",
+      { missing: ["A"], invalid: { B: "bad value" } },
+      { cause }
+    );
+
+    expect(err.cause).toBe(cause);
+    expect(err.code).toBe("ENV_VALIDATION_ERROR");
+    expect(err.details).toEqual({ missing: ["A"], invalid: { B: "bad value" } });
+    expect(err.missing).toEqual(["A"]);
+    expect(err.invalid).toEqual({ B: "bad value" });
   });
 });
