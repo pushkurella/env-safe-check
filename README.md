@@ -9,12 +9,12 @@ error message when required environment variables are missing or empty.
 
 - Zero runtime dependencies
 - Two APIs: simple (legacy array) or powerful (schema-based)
-- Type-safe: automatic parsing for `string`, `number`, `boolean`, `json`
-- Custom validators: add your own validation logic
-- Defaults & optional vars: sensible config for each variable
-- Colorful error messages with variable descriptions
+- Type-safe parsing for `string`, `number`, `boolean`, and `json`
+- Custom validators and human-readable validator hints
+- Defaults & optional vars with clear error output
+- Colorful CLI-friendly validation messages
 - Works in TypeScript and JavaScript projects (ESM)
-- Safe defaults for CI and production (exits with non-zero code on errors)
+- CI-safe by default (exits with non-zero code on validation errors)
 
 ## Installation
 
@@ -33,7 +33,7 @@ npm run build
 
 ## Quick usage
 
-### Simple mode (Legacy)
+### Simple mode (legacy)
 
 Validate a list of required environment variables:
 
@@ -44,12 +44,12 @@ import { validateEnv } from 'env-safe-check';
 validateEnv(['DATABASE_URL', 'API_KEY']);
 ```
 
-### Schema mode (Recommended)
+### Schema mode (recommended)
 
 Validate with types, defaults, custom validators, and descriptions:
 
 ```ts
-import { validateEnv, type VariableSchema } from 'env-safe-check';
+import { validateEnv } from 'env-safe-check';
 
 const env = validateEnv({
   schema: {
@@ -62,35 +62,34 @@ const env = validateEnv({
         ['development', 'production', 'test'].includes(value)
           ? true
           : 'Must be one of: development, production, test',
+      validatorHint: 'one of: development | production | test',
     },
     FEATURE_CONFIG: { type: 'json', required: false },
   },
   throwError: false, // default: exits process on error
-  silent: false,     // default: prints colorful output
+  silent: false, // default: prints colorful output
 });
 
-// Returns parsed and validated env object:
-// { DATABASE_URL: string, PORT: number, DEBUG: boolean, NODE_ENV: string, FEATURE_CONFIG?: any }
 console.log(env.PORT); // 3000 (or parsed value from process.env.PORT)
 ```
 
 ## API
 
-### `validateEnv(required: string[]): void` (Legacy)
+### `validateEnv(required: string[]): void` (legacy)
 
 - **required** — array of environment variable names to verify
-- **Returns** — void; exits process (code 1) if any are missing or empty
+- **Returns** — void; exits process (code `1`) if any are missing or empty
 - **Console output** — colorful error/success messages
 
-### `validateEnv(config: ValidateEnvOptions): Record<string, any>` (Recommended)
+### `validateEnv(config: ValidateEnvOptions): Record<string, any>` (recommended)
 
 - **config.schema** — Record of variable names to schema definitions
   - Each value can be:
-    - A type string shorthand: `'string' | 'number' | 'boolean' | 'json'`
-    - A full `VariableSchema` object (see below)
-- **config.throwError** (default: `false`) — throw `EnvValidationError` instead of exiting process
+    - Type shorthand: `'string' | 'number' | 'boolean' | 'json'`
+    - Full `VariableSchema` object
+- **config.throwError** (default: `false`) — throw `EnvValidationError` instead of exiting
 - **config.silent** (default: `false`) — suppress console output
-- **Returns** — `Record<string, any>` with parsed env variables
+- **Returns** — object with parsed env values
 - **Throws** — `EnvValidationError` if `throwError: true` and validation fails
 
 ### `VariableSchema`
@@ -98,58 +97,51 @@ console.log(env.PORT); // 3000 (or parsed value from process.env.PORT)
 ```ts
 interface VariableSchema {
   // Type of the variable. Parsed and validated accordingly.
-  // 'string' | 'number' | 'boolean' | 'json'
   type?: 'string' | 'number' | 'boolean' | 'json';
 
   // Whether this variable is required (default: true)
   required?: boolean;
 
-  // Default value if not set and not required
+  // Default value used when variable is missing and required is false
   default?: string;
 
-  // Custom validation function
-  // Return true if valid, or an error string if invalid
+  // Custom validation. Return true if valid, or an error string if invalid.
   validator?: (value: string) => boolean | string;
 
-  // Description for error messages
+  // Human-readable validator expectation shown in error output.
+  validatorHint?: string;
+
+  // Description shown in error output.
   description?: string;
 }
 ```
 
 ### `EnvValidationError`
 
-Thrown when validation fails with `throwError: true`:
-
 ```ts
+import { EnvValidationError, validateEnv } from 'env-safe-check';
+
 try {
-  const env = validateEnv({ schema: { /* ... */ }, throwError: true });
+  validateEnv({ schema: { DB_URL: 'string' }, throwError: true });
 } catch (err) {
   if (err instanceof EnvValidationError) {
-    console.error('Missing:', err.missing); // string[]
-    console.error('Invalid:', err.invalid); // Record<string, string>
+    console.error('Missing:', err.missing);
+    console.error('Invalid:', err.invalid);
   }
 }
 ```
 
+## Best practices to make this library more helpful in your app
+
+- Validate **once at startup** and fail fast.
+- Add a `description` for each variable so error output helps teammates quickly.
+- Use `validatorHint` whenever you use a custom `validator`.
+- Prefer `throwError: true` in tests and scripts where you need custom handling.
+- Keep optional variables explicit (`required: false`) and document defaults.
+
 ## Examples
 
-### Type parsing with defaults
-
-```ts
-const env = validateEnv({
-  schema: {
-    PORT: { type: 'number', default: '3000' },
-    TIMEOUT: { type: 'number', required: false },
-    ENABLE_CACHE: { type: 'boolean', default: 'true' },
-  },
-});
-
-// PORT is always a number (parsed from env or default)
-// TIMEOUT is optional; undefined if not set
-// ENABLE_CACHE is always a boolean
-```
-
-### Custom validators
+### Custom validators with hints
 
 ```ts
 const env = validateEnv({
@@ -158,11 +150,10 @@ const env = validateEnv({
       type: 'number',
       validator: (val) => {
         const num = Number(val);
-        if (num < 1 || num > 32) {
-          return 'Must be between 1 and 32';
-        }
-        return true;
+        return num >= 1 && num <= 32 ? true : 'Must be between 1 and 32';
       },
+      validatorHint: 'integer in range 1..32',
+      description: 'Worker pool size',
     },
   },
 });
@@ -171,84 +162,52 @@ const env = validateEnv({
 ### Throw errors instead of exiting
 
 ```ts
+import { EnvValidationError, validateEnv } from 'env-safe-check';
+
 try {
-  const env = validateEnv({
+  validateEnv({
     schema: { DB_URL: 'string' },
     throwError: true,
   });
 } catch (err) {
   if (err instanceof EnvValidationError) {
-    // Handle custom error; code continues (doesn't exit)
+    // Handle in your own error flow (tests, scripts, startup wrappers)
   }
 }
 ```
 
-## Project specifics (for contributors / package authors)
+## Troubleshooting
+
+- **Boolean parsing fails**: only `true` / `false` / `1` / `0` are accepted.
+- **Number parsing fails**: make sure the value is numeric (`3000`, not `three-thousand`).
+- **JSON parsing fails**: provide valid JSON (`{"enabled": true}`), not JS-like syntax.
+- **Default not applied**: defaults are used when `required: false` and the variable is missing.
+
+## Project specifics (for contributors)
 
 - Source files are TypeScript in `src/`.
 - Build emits ESM JavaScript into `dist/`.
-- Source imports are written without `.js` extensions for ergonomics in
-  TypeScript; the build process rewrites emitted imports to include `.js`
-  so the output is runnable under Node ESM (`node >= 12` with ESM support).
 
 Commands:
 
 ```bash
-# Build and patch emitted imports
 npm run build
-
-# Run TypeScript type-check only
-npx tsc --noEmit
+npm run typecheck
+npm test
 ```
 
 ## Publishing
 
-1. Bump the package version in `package.json`.
-2. Run `npm run build` to produce `dist/`.
-3. Verify the `main`/`exports` fields point to built files (if applicable).
+1. Bump package version in `package.json`.
+2. Run `npm run build`.
+3. Verify `main`/`types` entries.
 4. `npm publish --access public`
 
 ## Contributing
 
-Contributions are welcome. Open issues for bugs or small feature requests.
+Contributions are welcome. Open issues for bugs or feature requests.
 
-Please run the tests (if added) and ensure linting/type-checks pass before submitting a PR.
-
-### Conventional Commits
-
-This project uses [semantic-release](https://semantic-release.gitbook.io/) to automate versioning and publishing based on commit messages. Please follow the [Conventional Commits](https://www.conventionalcommits.org/) format:
-
-
-```
-type(scope): subject
-
-body
-
-footer
-```
-
-**Types:**
-- `feat:` A new feature (bumps minor version)
-- `fix:` A bug fix (bumps patch version)
-- `docs:` Documentation changes
-- `style:` Code style changes (no logic changes)
-- `refactor:` Refactor code without changing behavior
-- `perf:` Performance improvements
-- `test:` Adding/updating tests
-- `ci:` CI/CD changes
-- `chore:` Build, dependencies, etc.
-
-**Breaking Changes:**
-- Add `BREAKING CHANGE: description` in the footer to bump major version
-- Or use `feat!:` in the type to indicate a breaking change
-
-**Examples:**
-```bash
-npm run cz                  # Interactive prompt (recommended)
-git commit -m "feat: add JSON type validation"
-git commit -m "fix: correct boolean parsing"
-git commit -m "feat!: change API to return parsed object"
-```
+Please run type checks/tests before submitting a PR.
 
 ## License
 
