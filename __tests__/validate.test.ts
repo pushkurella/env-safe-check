@@ -140,4 +140,99 @@ describe("validateEnv", () => {
     expect(err.missing).toEqual(["A"]);
     expect(err.invalid).toEqual({ B: "bad value" });
   });
+
+  it("parses int, float, port, url, and array types", () => {
+    process.env.WORKERS = "4";
+    process.env.THRESHOLD = "3.14";
+    process.env.PORT = "8080";
+    process.env.WEBHOOK_URL = "https://example.com/hook";
+    process.env.FEATURES = "alpha, beta ,gamma ";
+
+    const env = validateEnv({
+      schema: {
+        WORKERS: "int",
+        THRESHOLD: "float",
+        PORT: "port",
+        WEBHOOK_URL: "url",
+        FEATURES: "array",
+      },
+      silent: true,
+    });
+
+    expect(env).toEqual({
+      WORKERS: 4,
+      THRESHOLD: 3.14,
+      PORT: 8080,
+      WEBHOOK_URL: "https://example.com/hook",
+      FEATURES: ["alpha", "beta", "gamma"],
+    });
+  });
+
+  it("marks invalid int, port, and url values as invalid in silent mode", () => {
+    process.env.WORKERS = "4.2";
+    process.env.PORT = "70000";
+    process.env.WEBHOOK_URL = "not-a-url";
+
+    const env = validateEnv({
+      schema: {
+        WORKERS: "int",
+        PORT: "port",
+        WEBHOOK_URL: "url",
+      },
+      silent: true,
+    });
+
+    expect(env).toEqual({});
+  });
+
+  it("supports oneOf and enum constraints", () => {
+    process.env.NODE_ENV = "production";
+    process.env.REGION = "us-east-1";
+
+    const env = validateEnv({
+      schema: {
+        NODE_ENV: {
+          type: "string",
+          oneOf: ["development", "test", "production"],
+        },
+        REGION: {
+          type: "string",
+          enum: ["us-east-1", "eu-west-1"],
+        },
+      },
+      silent: true,
+    });
+
+    expect(env).toEqual({
+      NODE_ENV: "production",
+      REGION: "us-east-1",
+    });
+  });
+
+  it("rejects oneOf violations", () => {
+    process.env.NODE_ENV = "qa";
+
+    const env = validateEnv({
+      schema: {
+        NODE_ENV: {
+          type: "string",
+          oneOf: ["development", "test", "production"],
+        },
+      },
+      silent: true,
+    });
+
+    expect(env).toEqual({ NODE_ENV: "qa" });
+
+    expect(() =>
+      validateEnv({
+        schema: {
+          NODE_ENV: {
+            type: "string",
+            oneOf: ["development", "test", "production"],
+          },
+        },
+      })
+    ).toThrow(EnvValidationError);
+  });
 });

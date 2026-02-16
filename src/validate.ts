@@ -24,6 +24,30 @@ function parseValue(value: string, type: VariableType): any {
       const num = Number(value);
       if (isNaN(num)) throw new Error("Invalid number");
       return num;
+    case "int":
+      const intNum = Number(value);
+      if (!Number.isInteger(intNum)) throw new Error("Invalid int");
+      return intNum;
+    case "float":
+      const floatNum = Number(value);
+      if (Number.isNaN(floatNum) || !Number.isFinite(floatNum)) {
+        throw new Error("Invalid float");
+      }
+      return floatNum;
+    case "port":
+      const portNum = Number(value);
+      if (!Number.isInteger(portNum) || portNum < 1 || portNum > 65535) {
+        throw new Error("Invalid port (expected integer between 1 and 65535)");
+      }
+      return portNum;
+    case "url":
+      try {
+        return new URL(value).toString();
+      } catch {
+        throw new Error("Invalid url");
+      }
+    case "array":
+      return value.split(",").map((entry) => entry.trim());
     case "boolean":
       if (value.toLowerCase() === "true" || value === "1") return true;
       if (value.toLowerCase() === "false" || value === "0") return false;
@@ -107,6 +131,11 @@ export function validateEnv(
             : "Validation failed";
         invalid[key] = errorMsg;
       }
+    }
+
+    const oneOfValues = varSchema.oneOf ?? varSchema.enum;
+    if (oneOfValues && oneOfValues.length > 0 && !oneOfValues.includes(value)) {
+      invalid[key] = `Must be one of: ${oneOfValues.join(", ")}`;
     }
   }
 
@@ -250,6 +279,11 @@ function getExpectedInputHint(
     hint += ", must satisfy custom validator";
   }
 
+  const oneOfValues = normalized.oneOf ?? normalized.enum;
+  if (oneOfValues && oneOfValues.length > 0) {
+    hint += `, one of: ${oneOfValues.join(" | ")}`;
+  }
+
   return hint;
 }
 
@@ -260,6 +294,16 @@ function getTypeHint(type: VariableType): string {
   switch (type) {
     case "number":
       return "numeric value (e.g. 3000)";
+    case "int":
+      return "integer (e.g. 42)";
+    case "float":
+      return "floating-point number (e.g. 3.14)";
+    case "port":
+      return "integer between 1 and 65535";
+    case "url":
+      return "valid URL (e.g. https://example.com)";
+    case "array":
+      return "comma-separated values (trimmed)";
     case "boolean":
       return "true/false or 1/0";
     case "json":
