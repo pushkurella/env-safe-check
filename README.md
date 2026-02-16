@@ -89,6 +89,53 @@ console.log(env.PORT); // number
 
 ---
 
+## CLI Companion
+
+You can run validation without importing the library in app code:
+
+```bash
+# with .env loading
+npx env-safe-check validate --schema ./env.schema.js --env-file ./.env
+```
+
+This is useful for CI preflight checks and npm scripts:
+
+```json
+{
+  "scripts": {
+    "validate:env": "env-safe-check validate --schema ./env.schema.js"
+  }
+}
+```
+
+### CLI options
+
+| Option | Description |
+|--------|-------------|
+| `validate` | Validate env variables using a schema module |
+| `--schema <path>` | Path to a module that exports schema (`default`, `schema`, or `envSchema`) |
+| `--env-file <path>` | Load env vars from file before validation |
+| `--silent` | Suppress non-error output |
+
+Schema file example:
+
+```js
+export default {
+  DATABASE_URL: {
+    type: "string",
+    description: "PostgreSQL connection URL",
+  },
+  PORT: {
+    type: "number",
+    default: "3000",
+  },
+};
+```
+
+Note: TypeScript schema files (`.ts`) are not loaded directly by the CLI on Node.js 20. Use `.js`/`.mjs` output or run with a TypeScript loader.
+
+---
+
 ## 🧩 Why env-safe-check?
 
 Many apps rely on `process.env` directly.
