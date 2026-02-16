@@ -1,7 +1,16 @@
 /**
  * Variable type for validation and parsing.
  */
-export type VariableType = 'string' | 'number' | 'boolean' | 'json';
+export type VariableType =
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'json'
+  | 'int'
+  | 'float'
+  | 'port'
+  | 'url'
+  | 'array';
 
 /**
  * Schema definition for a single environment variable.
@@ -39,6 +48,18 @@ export interface VariableSchema {
    * Description of the variable (for error messages).
    */
   description?: string;
+
+  /**
+   * Allowed string values for this variable.
+   * Alias of oneOf.
+   */
+  enum?: readonly string[];
+
+  /**
+   * Allowed string values for this variable.
+   * Alias of enum.
+   */
+  oneOf?: readonly string[];
 }
 
 /**

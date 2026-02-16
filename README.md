@@ -58,8 +58,12 @@ export const env = validateEnv({
     },
 
     PORT: {
-      type: 'number',
+      type: 'port',
       default: '3000',
+    },
+
+    PUBLIC_BASE_URL: {
+      type: 'url',
     },
 
     DEBUG: {
@@ -70,11 +74,14 @@ export const env = validateEnv({
 
     NODE_ENV: {
       type: 'string',
-      validator: (value) =>
-        ['development', 'production', 'test'].includes(value)
-          ? true
-          : 'Must be one of: development, production, test',
-      validatorHint: 'development | production | test',
+      oneOf: ['development', 'production', 'test'],
+    },
+
+    AWS_REGION: {
+      type: 'string',
+      oneOf: ['us-east-1', 'us-west-2', 'eu-west-1'],
+      required: false,
+      default: 'us-east-1',
     },
 
     FEATURE_FLAGS: {
@@ -198,12 +205,22 @@ validateEnv(['DATABASE_URL', 'API_KEY']);
 
 ```ts
 interface VariableSchema {
-  type?: 'string' | 'number' | 'boolean' | 'json';
+  type?:
+    | 'string'
+    | 'number'
+    | 'boolean'
+    | 'json'
+    | 'int'
+    | 'float'
+    | 'port'
+    | 'url'
+    | 'array';
   required?: boolean;        // default: true
   default?: string;
   validator?: (value: string) => boolean | string;
   validatorHint?: string;
   description?: string;
+  oneOf?: readonly string[];
 }
 ```
 
