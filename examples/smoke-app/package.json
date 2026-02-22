@@ -1,0 +1,11 @@
+{
+  "name": "env-safe-check-smoke-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "env-safe-check validate --schema env.schema.js --env-file .env"
+  },
+  "dependencies": {
+    "env-safe-check": "file:../.."
+  }
+}
