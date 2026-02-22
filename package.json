@@ -1,9 +1,18 @@
 {
   "name": "env-safe-check",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./cli": {
+      "import": "./dist/cli.js"
+    }
+  },
   "bin": {
     "env-safe-check": "dist/bin.js"
   },
@@ -23,19 +32,37 @@
     "smoke:refresh": "powershell -ExecutionPolicy Bypass -File scripts/refresh-smoke-app.ps1"
   },
   "keywords": [
-    "env",
-    "environment",
-    "validation",
-    "safe",
-    "check",
-    "typescript"
-  ],
+  "env",
+  "environment",
+  "environment variables",
+  "dotenv",
+  "config",
+  "configuration",
+  "validation",
+  "schema validation",
+  "runtime validation",
+  "typescript",
+  "node",
+  "nodejs"
+ ],
   "engines": {
     "node": ">=20"
   },
   "author": "Pushpak Kurella",
   "license": "ISC",
   "description": "Validate environment variables with schema-based parsing, defaults, and clear runtime errors.",
+  "repository": "github:pushkurella/env-safe-check",
+  "homepage": "https://github.com/pushkurella/env-safe-check#readme",
+  "bugs": {
+    "url": "https://github.com/pushkurella/env-safe-check/issues"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/pushkurella"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@commitlint/config-conventional": "^20.4.1",
     "@semantic-release/github": "^12.0.6",
