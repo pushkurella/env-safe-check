@@ -1,16 +1,23 @@
 /**
+ * Runtime constants for all supported variable types.
+ * Useful for JS schema files where importing TypeScript-only types is not possible.
+ */
+export const VariableTypes = {
+  STRING: "string",
+  NUMBER: "number",
+  BOOLEAN: "boolean",
+  JSON: "json",
+  INT: "int",
+  FLOAT: "float",
+  PORT: "port",
+  URL: "url",
+  ARRAY: "array",
+} as const;
+
+/**
  * Variable type for validation and parsing.
  */
-export type VariableType =
-  | 'string'
-  | 'number'
-  | 'boolean'
-  | 'json'
-  | 'int'
-  | 'float'
-  | 'port'
-  | 'url'
-  | 'array';
+export type VariableType = (typeof VariableTypes)[keyof typeof VariableTypes];
 
 /**
  * Schema definition for a single environment variable.

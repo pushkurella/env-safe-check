@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { validateEnv } from "../src/validate";
-import { EnvValidationError } from "../src/types";
+import { EnvValidationError, VariableTypes } from "../src/types";
 
 describe("validateEnv", () => {
   const originalEnv = { ...process.env };
@@ -234,5 +234,23 @@ describe("validateEnv", () => {
         },
       })
     ).toThrow(EnvValidationError);
+  });
+
+  it("supports VariableTypes constants in schema type fields", () => {
+    process.env.PORT = "3000";
+    process.env.DEBUG = "1";
+
+    const env = validateEnv({
+      schema: {
+        PORT: { type: VariableTypes.PORT },
+        DEBUG: { type: VariableTypes.BOOLEAN },
+      },
+      silent: true,
+    });
+
+    expect(env).toEqual({
+      PORT: 3000,
+      DEBUG: true,
+    });
   });
 });

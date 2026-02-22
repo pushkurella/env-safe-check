@@ -4,7 +4,7 @@
 
 > Zero-dependency, type-safe environment validation for Node.js & TypeScript with CLI support and schema-based parsing.
 
-![CI](https://github.com/pushkurella/env-safe-check/actions/workflows/npm-publish.yml/badge.svg)
+![CI](https://img.shields.io/github/actions/workflow/status/pushkurella/env-safe-check/ci.yml?label=CI&logo=github&style=flat-square)
 [![npm version](https://img.shields.io/npm/v/env-safe-check.svg)](https://www.npmjs.com/package/env-safe-check)
 [![npm downloads](https://img.shields.io/npm/dw/env-safe-check.svg)](https://www.npmjs.com/package/env-safe-check)
 [![license](https://img.shields.io/npm/l/env-safe-check.svg)](https://www.npmjs.com/package/env-safe-check)
@@ -49,44 +49,44 @@ pnpm add env-safe-check
 ## ⚡ TL;DR (Recommended Schema Mode)
 
 ```ts
-import { validateEnv } from 'env-safe-check';
+import { validateEnv, VariableTypes } from 'env-safe-check';
 
 export const env = validateEnv({
   schema: {
     DATABASE_URL: {
-      type: 'string',
+      type: VariableTypes.STRING,
       description: 'PostgreSQL connection URL',
     },
 
     PORT: {
-      type: 'port',
+      type: VariableTypes.PORT,
       default: '3000',
     },
 
     PUBLIC_BASE_URL: {
-      type: 'url',
+      type: VariableTypes.URL,
     },
 
     DEBUG: {
-      type: 'boolean',
+      type: VariableTypes.BOOLEAN,
       required: false,
       default: 'false',
     },
 
     NODE_ENV: {
-      type: 'string',
+      type: VariableTypes.STRING,
       oneOf: ['development', 'production', 'test'],
     },
 
     AWS_REGION: {
-      type: 'string',
+      type: VariableTypes.STRING,
       oneOf: ['us-east-1', 'us-west-2', 'eu-west-1'],
       required: false,
       default: 'us-east-1',
     },
 
     FEATURE_FLAGS: {
-      type: 'json',
+      type: VariableTypes.JSON,
       required: false,
     },
   },
@@ -94,6 +94,8 @@ export const env = validateEnv({
 
 console.log(env.PORT); // number
 ```
+
+`VariableTypes` is a runtime export, so it works in both TypeScript and plain JavaScript schema files with autocomplete support.
 
 ---
 
@@ -128,13 +130,15 @@ This is useful for CI preflight checks and npm scripts:
 Schema file example:
 
 ```js
+import { VariableTypes } from "env-safe-check";
+
 export default {
   DATABASE_URL: {
-    type: "string",
+    type: VariableTypes.STRING,
     description: "PostgreSQL connection URL",
   },
   PORT: {
-    type: "number",
+    type: VariableTypes.PORT,
     default: "3000",
   },
 };
