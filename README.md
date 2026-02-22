@@ -2,8 +2,9 @@
 
 # env-safe-check
 
-> Zero-dependency, type-safe environment validation for Node.js & TypeScript
+> Zero-dependency, type-safe environment validation for Node.js & TypeScript with CLI support and schema-based parsing.
 
+![CI](https://github.com/pushkurella/env-safe-check/actions/workflows/npm-publish.yml/badge.svg)
 [![npm version](https://img.shields.io/npm/v/env-safe-check.svg)](https://www.npmjs.com/package/env-safe-check)
 [![npm downloads](https://img.shields.io/npm/dw/env-safe-check.svg)](https://www.npmjs.com/package/env-safe-check)
 [![license](https://img.shields.io/npm/l/env-safe-check.svg)](https://www.npmjs.com/package/env-safe-check)
@@ -137,6 +138,25 @@ export default {
     default: "3000",
   },
 };
+```
+
+Example failure output:
+
+```text
+❌ Environment validation failed
+
+Missing:
+  - DATABASE_URL
+
+Invalid:
+  - PORT: Must be between 1 and 65535
+```
+
+Sample `.env` that produces the failure above:
+
+```env
+PORT=70000
+# DATABASE_URL is intentionally missing
 ```
 
 Note: TypeScript schema files (`.ts`) are not loaded directly by the CLI on Node.js 20. Use `.js`/`.mjs` output or run with a TypeScript loader.
@@ -303,6 +323,16 @@ npm test
 
 ---
 
+## Why not just use dotenv or envalid?
+
+| Feature | env-safe-check | dotenv | envalid |
+|----------|---------------|--------|---------|
+| Zero dependency | ✅ | ✅ | ❌ |
+| CLI validation | ✅ | ❌ | ❌ |
+| Schema mode | ✅ | ❌ | ✅ |
+| Type-safe | ✅ | ⚠️ | ✅ |
+
+---
 ## 📦 Publishing
 
 1. Bump version in `package.json`
@@ -322,3 +352,4 @@ Before submitting:
 - Keep changes focused and minimal
 
 ---
+
