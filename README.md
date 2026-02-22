@@ -9,6 +9,7 @@
 [![npm downloads](https://img.shields.io/npm/dw/env-safe-check.svg)](https://www.npmjs.com/package/env-safe-check)
 [![license](https://img.shields.io/npm/l/env-safe-check.svg)](https://www.npmjs.com/package/env-safe-check)
 [![node](https://img.shields.io/node/v/env-safe-check.svg)](https://www.npmjs.com/package/env-safe-check)
+[![Known Vulnerabilities](https://snyk.io/test/npm/env-safe-check/badge.svg)](https://snyk.io/test/npm/env-safe-check)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue.svg)]()
 
 </div>
