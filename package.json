@@ -49,7 +49,7 @@
     "node": ">=20"
   },
   "author": "Pushpak Kurella",
-  "license": "ISC",
+  "license": "MIT",
   "description": "Validate environment variables with schema-based parsing, defaults, and clear runtime errors.",
   "repository": "github:pushkurella/env-safe-check",
   "homepage": "https://github.com/pushkurella/env-safe-check#readme",

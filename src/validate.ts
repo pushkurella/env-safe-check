@@ -3,7 +3,19 @@ import type {
   VariableType,
   ValidateEnvOptions,
 } from "./types";
-import { EnvValidationError } from "./types";
+import { EnvValidationError, VariableTypes } from "./types";
+
+const {
+  STRING: TYPE_STRING,
+  NUMBER: TYPE_NUMBER,
+  BOOLEAN: TYPE_BOOLEAN,
+  JSON: TYPE_JSON,
+  INT: TYPE_INT,
+  FLOAT: TYPE_FLOAT,
+  PORT: TYPE_PORT,
+  URL: TYPE_URL,
+  ARRAY: TYPE_ARRAY,
+} = VariableTypes;
 
 const colors = {
   reset: "\x1b[0m",
@@ -11,6 +23,7 @@ const colors = {
   red: "\x1b[31m",
   green: "\x1b[32m",
   yellow: "\x1b[33m",
+  magenta: "\x1b[35m",
   cyan: "\x1b[36m",
   gray: "\x1b[90m",
 };
@@ -20,41 +33,41 @@ const colors = {
  */
 function parseValue(value: string, type: VariableType): any {
   switch (type) {
-    case "number":
+    case TYPE_NUMBER:
       const num = Number(value);
       if (isNaN(num)) throw new Error("Invalid number");
       return num;
-    case "int":
+    case TYPE_INT:
       const intNum = Number(value);
       if (!Number.isInteger(intNum)) throw new Error("Invalid int");
       return intNum;
-    case "float":
+    case TYPE_FLOAT:
       const floatNum = Number(value);
       if (Number.isNaN(floatNum) || !Number.isFinite(floatNum)) {
         throw new Error("Invalid float");
       }
       return floatNum;
-    case "port":
+    case TYPE_PORT:
       const portNum = Number(value);
       if (!Number.isInteger(portNum) || portNum < 1 || portNum > 65535) {
         throw new Error("Invalid port (expected integer between 1 and 65535)");
       }
       return portNum;
-    case "url":
+    case TYPE_URL:
       try {
         return new URL(value).toString();
       } catch {
         throw new Error("Invalid url");
       }
-    case "array":
+    case TYPE_ARRAY:
       return value.split(",").map((entry) => entry.trim());
-    case "boolean":
+    case TYPE_BOOLEAN:
       if (value.toLowerCase() === "true" || value === "1") return true;
       if (value.toLowerCase() === "false" || value === "0") return false;
       throw new Error("Invalid boolean (expected 'true', 'false', '1', or '0')");
-    case "json":
+    case TYPE_JSON:
       return JSON.parse(value);
-    case "string":
+    case TYPE_STRING:
     default:
       return value;
   }
@@ -95,7 +108,7 @@ export function validateEnv(
         : schemaDef;
 
     const isRequired = varSchema.required !== false; // default: true
-    const type = varSchema.type || "string";
+    const type = varSchema.type || TYPE_STRING;
     const value = process.env[key];
 
     // Check if variable is present and not empty
@@ -222,7 +235,11 @@ function buildErrorMessage(
     for (const [key, error] of Object.entries(invalid)) {
       const desc = getSchemaDescription(key, schema);
       const expected = getExpectedInputHint(key, schema);
+      const providedValue = process.env[key];
+      const displayedValue =
+        providedValue === undefined ? "<not set>" : `'${providedValue}'`;
       msg += `  ${colors.yellow}${key}${colors.reset}: ${error}`;
+      msg += `\n    ${colors.gray}Provided:${colors.reset} ${colors.magenta}${displayedValue}${colors.reset}`;
       if (desc) {
         msg += `\n    ${colors.gray}${desc}${colors.reset}`;
       }
@@ -263,7 +280,7 @@ function getExpectedInputHint(
   const normalized: VariableSchema =
     typeof def === "string" ? { type: def as VariableType } : def;
 
-  const type = normalized.type || "string";
+  const type = normalized.type || TYPE_STRING;
   const required = normalized.required !== false ? "required" : "optional";
   const typeHint = getTypeHint(type);
 
@@ -292,23 +309,23 @@ function getExpectedInputHint(
  */
 function getTypeHint(type: VariableType): string {
   switch (type) {
-    case "number":
+    case TYPE_NUMBER:
       return "numeric value (e.g. 3000)";
-    case "int":
+    case TYPE_INT:
       return "integer (e.g. 42)";
-    case "float":
+    case TYPE_FLOAT:
       return "floating-point number (e.g. 3.14)";
-    case "port":
+    case TYPE_PORT:
       return "integer between 1 and 65535";
-    case "url":
+    case TYPE_URL:
       return "valid URL (e.g. https://example.com)";
-    case "array":
+    case TYPE_ARRAY:
       return "comma-separated values (trimmed)";
-    case "boolean":
+    case TYPE_BOOLEAN:
       return "true/false or 1/0";
-    case "json":
+    case TYPE_JSON:
       return "valid JSON string";
-    case "string":
+    case TYPE_STRING:
     default:
       return "plain text";
   }

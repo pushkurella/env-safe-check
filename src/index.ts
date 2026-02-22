@@ -4,4 +4,4 @@ export type {
   VariableSchema,
   ValidateEnvOptions,
 } from "./types";
-export { EnvValidationError } from "./types";
+export { EnvValidationError, VariableTypes } from "./types";

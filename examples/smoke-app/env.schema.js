@@ -1,16 +1,17 @@
-export const envSchema =     {
+import { VariableTypes } from "env-safe-check";
+
+export const envSchema = {
   DATABASE_URL: {
-    type: "url",
+    type: VariableTypes.URL,
     description: "PostgreSQL connection URL",
   },
   PORT: {
-    type: "number",
-    default: 3000,
+    type: VariableTypes.PORT,
+    default: "3000",
   },
-  Node_ENV: {
-    type: "enum",
-    validator: (v) =>
-    ["development", "production", "test"].includes(v),
+  NODE_ENV: {
+    type: VariableTypes.STRING,
+    oneOf: ["development", "production", "test"],
     default: "development",
   },
 };
